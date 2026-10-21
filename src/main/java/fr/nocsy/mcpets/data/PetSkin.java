@@ -198,7 +198,7 @@ public class PetSkin {
 
         if (!instancePet.getId().equals(objectPet.getId())) return false;
 
-        Location loc = instancePet.getActiveMob().getEntity().getBukkitEntity().getLocation();
+        Location loc = instancePet.getActiveMob().getLocation();
 
         boolean hasRider = instancePet.hasMount(Bukkit.getPlayer(instancePet.getOwner()));
         instancePet.setActiveSkin(this);

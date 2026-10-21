@@ -8,14 +8,12 @@ import fr.nocsy.mcpets.data.livingpets.PetFoodType;
 import fr.nocsy.mcpets.utils.PetAnnouncement;
 import fr.nocsy.mcpets.utils.PetMath;
 import fr.nocsy.mcpets.utils.Utils;
-import io.lumine.mythic.api.mobs.MythicMob;
-import io.lumine.mythic.api.skills.Skill;
+import fr.nocsy.mcpets.bettermob.BetterMobHook;
 import lombok.Getter;
 import org.bukkit.Material;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 public enum EditorExpectationType {
@@ -168,14 +166,12 @@ public enum EditorExpectationType {
             return pet == null;
         }
         else if (this.equals(EditorExpectationType.SKILL)) {
-            Optional<Skill> optional = MCPets.getMythicMobs().getSkillManager().getSkill(any + "");
-            // Check if the skill exists
-            return optional.isPresent();
+            // Check if the skill exists in BetterMob
+            return BetterMobHook.skillExists(any + "");
         }
         else if (this.equals(EditorExpectationType.MYTHICMOB)) {
-            Optional<MythicMob> optional = MCPets.getMythicMobs().getMobManager().getMythicMob(any + "");
-            // Check if the mythicmob exists
-            return optional.isPresent();
+            // Check if the BetterMob mob exists
+            return BetterMobHook.mobExists(any + "");
         }
         else if (this.equals(EditorExpectationType.MOUNT_TYPE)){
             return MCPets.getModeler().supportsMount(String.valueOf(any));

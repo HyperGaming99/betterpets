@@ -81,7 +81,7 @@ public enum EditorItems {
     PET_EDITOR_SKINS(PET_EDITOR_SKINS(), null, null, null, EditorState.PET_EDITOR_SKINS, false),
 
     PET_EDITOR_ICON(PET_EDITOR_ICON(), "Icon.Raw", null, EditorExpectationType.ITEM, null, false),
-    PET_EDITOR_MYTHICMOB(PET_EDITOR_MYTHICMOB(), "MythicMob", null, EditorExpectationType.MYTHICMOB, null, false),
+    PET_EDITOR_MYTHICMOB(PET_EDITOR_MYTHICMOB(), "BetterMob", null, EditorExpectationType.MYTHICMOB, null, false),
     PET_EDITOR_PERMISSION(PET_EDITOR_PERMISSION(), "Permission", null, EditorExpectationType.STRING, null, true),
     PET_EDITOR_MOUNTABLE(PET_EDITOR_MOUNTABLE(), "Mountable", null, EditorExpectationType.BOOLEAN, null, true),
     PET_EDITOR_MOUNT_TYPE(PET_EDITOR_MOUNT_TYPE(), "MountType", null, EditorExpectationType.MOUNT_TYPE, null, true),
@@ -123,7 +123,7 @@ public enum EditorItems {
     PET_EDITOR_EDIT_SKIN_DELETE(DELETE("skin"), null, null, EditorExpectationType.PET_SKIN_DELETE, null, false),
     PET_EDITOR_SKIN_CREATE_NEW(CREATE_NEW_ITEM("skin", Material.LEATHER), null, null, EditorExpectationType.PET_SKIN_CREATE, null, false),
     PET_EDITOR_EDIT_SKIN_ICON(UNKNOWN(), "%path%.Icon.Raw", null, EditorExpectationType.ITEM, null, false),
-    PET_EDITOR_EDIT_SKIN_MYTHICMOB(PET_EDITOR_SKIN_MYTHICMOB(), "%path%.MythicMob", null, EditorExpectationType.MYTHICMOB, null, false),
+    PET_EDITOR_EDIT_SKIN_MYTHICMOB(PET_EDITOR_SKIN_MYTHICMOB(), "%path%.BetterMob", null, EditorExpectationType.MYTHICMOB, null, false),
     PET_EDITOR_EDIT_SKIN_PERMISSION(PET_EDITOR_SKIN_PERMISSION(), "%path%.Permission", null, EditorExpectationType.STRING, null, true),
 
     // Category editor
@@ -566,11 +566,11 @@ public enum EditorItems {
     private static ItemStack CONFIG_EDITOR_USE_DEFAULT_MYTHICMOBS_NAMES() {
         final ItemStack it = new ItemStack(Material.KNOWLEDGE_BOOK);
         final ItemMeta meta = it.getItemMeta();
-        meta.setDisplayName("§6Use default MythicMobs name");
+        meta.setDisplayName("§6Use default BetterMob name");
 
         final ArrayList<String> lores = new ArrayList<>();
         lores.add(" ");
-        lores.add("§7Whether the MythicMobs name should");
+        lores.add("§7Whether the BetterMob display name should");
         lores.add("§7show up as the default name.");
         lores.add(" ");
         lores.add("§7Current value: §e%value%");
@@ -1015,11 +1015,11 @@ public enum EditorItems {
     private static ItemStack PET_EDITOR_MYTHICMOB() {
         final ItemStack it = new ItemStack(Material.WRITABLE_BOOK);
         final ItemMeta meta = it.getItemMeta();
-        meta.setDisplayName("§6MythicMob");
+        meta.setDisplayName("§6BetterMob mob");
 
         final ArrayList<String> lores = new ArrayList<>();
         lores.add(" ");
-        lores.add("§7Set the MythicMob that handles the pet.");
+        lores.add("§7Set the BetterMob mob that handles the pet.");
         lores.add(" ");
         lores.add("§7Current value: §e%value%");
 
@@ -1251,7 +1251,7 @@ public enum EditorItems {
     private static ItemStack PET_EDITOR_ICON() {
         final ItemStack it = new ItemStack(Material.END_CRYSTAL);
         final ItemMeta meta = it.getItemMeta();
-        meta.setDisplayName("§6MythicMob");
+        meta.setDisplayName("§6BetterMob mob");
 
         final ArrayList<String> lores = new ArrayList<>();
         lores.add(" ");
@@ -1465,7 +1465,7 @@ public enum EditorItems {
         lores.add("§7Set by how much the damage done by");
         lores.add("§7the pet can be multiplicated by.");
         lores.add("§cThis is not automatic and should be used");
-        lores.add("§cas a placeholder in MythicMobs (see wiki)");
+        lores.add("§cas a placeholder in BetterMob (see wiki)");
         lores.add(" ");
         lores.add("§7Current value: §e%value%");
 
@@ -1484,7 +1484,7 @@ public enum EditorItems {
         lores.add("§7Set by how much the spell power done of");
         lores.add("§7the pet can be multiplicated by.");
         lores.add("§cThis is not automatic and should be used");
-        lores.add("§cas a placeholder in MythicMobs (see wiki)");
+        lores.add("§cas a placeholder in BetterMob (see wiki)");
         lores.add(" ");
         lores.add("§7Current value: §e%value%");
 
@@ -1704,11 +1704,11 @@ public enum EditorItems {
     private static ItemStack PET_EDITOR_SKIN_MYTHICMOB() {
         final ItemStack it = new ItemStack(Material.WRITABLE_BOOK);
         final ItemMeta meta = it.getItemMeta();
-        meta.setDisplayName("§6Skin - MythicMob");
+        meta.setDisplayName("§6Skin - BetterMob mob");
 
         final ArrayList<String> lores = new ArrayList<>();
         lores.add(" ");
-        lores.add("§7Set the mythicmob to swap to as a skin");
+        lores.add("§7Set the BetterMob mob to swap to as a skin");
         lores.add(" ");
         lores.add("§7Current value: §e%value%");
 

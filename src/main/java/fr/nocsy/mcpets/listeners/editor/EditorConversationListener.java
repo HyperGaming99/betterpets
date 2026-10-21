@@ -60,10 +60,10 @@ public class EditorConversationListener implements Listener {
         // If the output type isn't respected, ask for another one.
         if (!conversation.entryMatch(entry)) {
             if (conversation.getEditorItem().getType().equals(EditorExpectationType.MYTHICMOB)) {
-                p.sendMessage("§cThe mythicmob §e" + entry + "§c does not exist. Check your MythicMob mob file to obtain the right ID.");
+                p.sendMessage("§cThe BetterMob mob §e" + entry + "§c does not exist. Check your BetterMob mob files to obtain the right ID.");
             }
             else if (conversation.getEditorItem().getType().equals(EditorExpectationType.SKILL)) {
-                p.sendMessage("§cThe skill §e" + entry + "§c does not exist. Check your MythicMob skills to obtain the right ID.");
+                p.sendMessage("§cThe skill §e" + entry + "§c does not exist. Check your BetterMob skills to obtain the right ID.");
             }
             else if (conversation.getEditorItem().getType().equals(EditorExpectationType.PET_CREATE)) {
                 p.sendMessage("§cThe pet §e" + entry + "§c already exists. Please use another ID.");

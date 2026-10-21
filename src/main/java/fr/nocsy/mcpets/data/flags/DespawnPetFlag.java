@@ -36,8 +36,6 @@ public class DespawnPetFlag extends AbstractFlag implements StoppableFlag {
         MCPets.getLog().info("Starting flag " + getFlagName() + ".");
 
         task = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(getMCPetsInstance(), () -> {
-            if (MCPets.getMythicMobs() == null) return;
-
             Player pl;
             for (UUID owner : new ArrayList<>(Pet.getActivePets().keySet())) {
                 pl = Bukkit.getPlayer(owner);

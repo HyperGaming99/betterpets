@@ -59,8 +59,9 @@ public class PetConfig extends AbstractConfig {
 
         if (getConfig().get("Id") == null)
             getConfig().set("Id", fileName.replace(".yml", ""));
-        if (getConfig().get("MythicMob") == null)
-            getConfig().set("MythicMob", "No MythicMob defined");
+        migrateMythicMobKeys();
+        if (getConfig().get("BetterMob") == null)
+            getConfig().set("BetterMob", "No BetterMob mob defined");
         if (getConfig().get("Permission") == null)
             getConfig().set("Permission", PPermission.USE.getPermission());
         if (getConfig().get("Distance") == null)
@@ -69,11 +70,31 @@ public class PetConfig extends AbstractConfig {
             getConfig().set("SpawnRange", 3);
         if (getConfig().get("ComingBackRange") == null)
             getConfig().set("ComingBackRange", 3);
-        reorderKeys("Id", "MythicMob", "Permission", "Distance", "SpawnRange", "ComingBackRange",
+        reorderKeys("Id", "BetterMob", "Permission", "Distance", "SpawnRange", "ComingBackRange",
                 "Mountable", "MountType", "MountPermission", "DespawnOnDismount", "AutoRide",
                 "Invulnerable", "InventorySize", "UseDefaultMythicMobsName",
                 "DespawnSkill", "SpawnSkill", "Taming", "Icon", "Signals", "Levels");
         save();
+    }
+
+    /**
+     * Pet files written for MythicMobs use "MythicMob" as key.
+     * Move those values to "BetterMob" (also inside Skins) so old files keep working.
+     */
+    private void migrateMythicMobKeys() {
+        if (getConfig().get("BetterMob") == null && getConfig().get("MythicMob") != null)
+            getConfig().set("BetterMob", getConfig().getString("MythicMob"));
+        getConfig().set("MythicMob", null);
+
+        final org.bukkit.configuration.ConfigurationSection skins = getConfig().getConfigurationSection("Skins");
+        if (skins == null) return;
+        for (final String skinId : skins.getKeys(false)) {
+            final String legacy = skins.getString(skinId + ".MythicMob");
+            if (legacy == null) continue;
+            if (skins.get(skinId + ".BetterMob") == null)
+                skins.set(skinId + ".BetterMob", legacy);
+            skins.set(skinId + ".MythicMob", null);
+        }
     }
 
     /**
@@ -137,7 +158,7 @@ public class PetConfig extends AbstractConfig {
 
         // Setting up the data
         final String id = getConfig().getString("Id");
-        final String mobType = getConfig().getString("MythicMob");
+        final String mobType = getConfig().getString("BetterMob");
         final String permission = getConfig().getString("Permission");
         final int distance = getConfig().getInt("Distance");
         final int spawnRange = getConfig().getInt("SpawnRange");
@@ -401,7 +422,7 @@ public class PetConfig extends AbstractConfig {
                 .toList();
 
         for (final String key : keys) {
-            final String mythicMobId = getConfig().getString(key + ".MythicMob");
+            final String mythicMobId = getConfig().getString(key + ".BetterMob");
             final String skinPerm = getConfig().getString(key + ".Permission");
 
             final ItemStack skinIcon = legacyItemRead(null, false, "", "§cSkin icon (not set)", key + ".Icon");
@@ -412,7 +433,7 @@ public class PetConfig extends AbstractConfig {
 
     public void registerCleanPetSkin() {
         final String id = UUID.randomUUID().toString();
-        getConfig().set("Skins." + id + ".MythicMob", pet.getMythicMobName());
+        getConfig().set("Skins." + id + ".BetterMob", pet.getMythicMobName());
         getConfig().set("Skins." + id + ".Permission", pet.getPermission());
         save();
 

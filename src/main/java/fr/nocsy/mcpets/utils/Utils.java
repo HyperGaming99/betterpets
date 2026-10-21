@@ -29,7 +29,6 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
-import io.lumine.mythic.api.skills.Skill;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -386,11 +385,6 @@ public class Utils {
             return PlaceholderAPI.setPlaceholders(Bukkit.getOfflinePlayer(uuid), msg);
         }
         return PlaceholderAPI.setPlaceholders(p, msg);
-    }
-
-    public static Skill getSkill(final String skillName) {
-        final Optional<Skill> optionalSkill = MCPets.getMythicMobs().getSkillManager().getSkill(skillName);
-        return optionalSkill.orElse(null);
     }
 
 }

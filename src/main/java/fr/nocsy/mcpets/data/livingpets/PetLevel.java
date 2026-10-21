@@ -22,8 +22,7 @@ import fr.nocsy.mcpets.data.PetDespawnReason;
 import fr.nocsy.mcpets.events.PetLevelUpEvent;
 import fr.nocsy.mcpets.data.inventories.PetInventory;
 
-import io.lumine.mythic.core.skills.SkillTriggers;
-import io.lumine.mythic.core.skills.SkillMetadataImpl;
+import fr.nocsy.mcpets.bettermob.BetterMobHook;
 
 public class PetLevel {
 
@@ -163,8 +162,7 @@ public class PetLevel {
         if (pet == null || !pet.isStillHere()) return;
         if (mythicSkill == null) return;
 
-        MCPets.getMythicMobs().getSkillManager().getSkill(mythicSkill).ifPresent(skill ->
-                skill.execute(new SkillMetadataImpl(SkillTriggers.CUSTOM, pet.getActiveMob(), pet.getActiveMob().getEntity())));
+        BetterMobHook.castSkill(mythicSkill, pet.getActiveMob());
     }
 
     /**
@@ -265,7 +263,7 @@ public class PetLevel {
             if (o != null) {
                 final Pet activePet = Pet.fromOwner(player);
                 final Location loc = activePet != null && activePet.isStillHere() ?
-                                activePet.getActiveMob().getEntity().getBukkitEntity().getLocation() :
+                                activePet.getActiveMob().getLocation() :
                                 o.getLocation();
 
                 // Despawn the previous pet

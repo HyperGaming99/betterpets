@@ -43,8 +43,8 @@ import fr.nocsy.mcpets.events.PetOwnerInteractEvent;
 import fr.nocsy.mcpets.data.inventories.PetInteractionMenu;
 import fr.nocsy.mcpets.data.inventories.MountInteractionMenu;
 
-import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
-import io.lumine.mythic.bukkit.events.MythicMobDespawnEvent;
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 
 public class PetListener implements Listener {
 
@@ -357,17 +357,29 @@ public class PetListener implements Listener {
     }
 
     /**
-     * Handle random despawn
+     * Handle random despawn: the pet entity left the world without MCPets removing it
+     * (chunk unload, another plugin, /bettermob killall...). Deaths are handled below.
      */
     private final Map<UUID, Integer> repeatRespawn = new HashMap<>();
-    @EventHandler
-    public void despawn(MythicMobDespawnEvent e) {
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void despawn(EntityRemoveFromWorldEvent e) {
         if (e.getEntity() == null) return;
+        if (!MCPets.getInstance().isEnabled()) return;
 
         Pet pet = Pet.getFromEntity(e.getEntity());
         if (pet == null) return;
         if (pet.isRemoved()) return;
+        // Only react to the pet's current entity, not to an old one being cleaned up
+        if (pet.getActiveMob() != null && !pet.getActiveMob().getUniqueId().equals(e.getEntity().getUniqueId())) return;
+        // Deaths go through the death handler
+        if (e.getEntity().isDead() && e.getEntity() instanceof org.bukkit.entity.LivingEntity living && living.getHealth() <= 0) return;
 
+        // Respawn on the next tick, the world is still removing the entity right now
+        Bukkit.getScheduler().runTask(MCPets.getInstance(), () -> respawnAfterRandomDespawn(pet));
+    }
+
+    private void respawnAfterRandomDespawn(Pet pet) {
+        if (pet.isRemoved()) return;
         pet.despawn(PetDespawnReason.MYTHICMOBS);
 
         UUID ownerUUID = pet.getOwner();
@@ -396,8 +408,8 @@ public class PetListener implements Listener {
     /**
      * Handle death of the pet
      */
-    @EventHandler
-    public void death(MythicMobDeathEvent e) {
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void death(EntityDeathEvent e) {
         if (e.getEntity() == null) return;
 
         Pet pet = Pet.getFromEntity(e.getEntity());

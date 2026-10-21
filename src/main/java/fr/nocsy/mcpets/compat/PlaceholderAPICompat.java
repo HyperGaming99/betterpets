@@ -29,10 +29,10 @@ public class PlaceholderAPICompat extends PlaceholderExpansion {
             case "PET_ID" -> pet.getId();
             case "PET_DISTANCE" -> String.valueOf(pet.getDistance());
             case "PET_HEALTH" -> String.valueOf(Math.round(stats != null
-                    ? stats.getCurrentHealth() : pet.getActiveMob().getEntity().getHealth()
+                    ? stats.getCurrentHealth() : pet.getActiveMob().getHealth()
             ));
             case "PET_MAX_HEALTH" -> String.valueOf(Math.round(stats != null
-                    ? stats.getCurrentLevel().getMaxHealth() : pet.getActiveMob().getEntity().getMaxHealth()
+                    ? stats.getCurrentLevel().getMaxHealth() : pet.getActiveMob().getMaxHealth()
             ));
             case "PET_ICON_NAME" -> pet.getIcon() != null
                     ? pet.getIcon().getItemMeta().getDisplayName()

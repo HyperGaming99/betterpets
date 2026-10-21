@@ -46,13 +46,13 @@ public enum Language {
     REVOKED("§7Your pet was revoked."),
     REVOKED_FOR_NEW_ONE("§7Your previous pet was revoked to summon the new one."),
     REVOKED_UNKNOWN("§cThe pet could not be spawned due to one of the following reasons :" +
-            "\n§7- The provided §cMythicMob in the pet config doesn't exist§7 (try to spawn it through /mm m spawn)§7." +
+            "\n§7- The provided §cBetterMob mob in the pet config doesn't exist§7 (try to spawn it through /bettermob spawn)§7." +
             "\n§7- The world is on §cpeaceful or easy mode§7." +
             "\n§7- A region §cprevents the mob from spawning§7 (the anchor is an aggressive mob most likely)." +
             "\n§7- You have a §cspawn protector plugin§7, try to spawn the mob in another world or far from spawn." +
             "\n§7- There exist other pets with the §csame id§7. Make sure you have unique ids."),
-    MYTHICMOB_NULL("§cThis pet could not be summoned. The associated mythicMob entity or file is null or was removed."),
-    NO_MOB_MATCH("§cThis pet could not be summoned. The associated mythicmob isn't registered in MythicMobs."),
+    MYTHICMOB_NULL("§cThis pet could not be summoned. The associated BetterMob mob entity or file is null or was removed."),
+    NO_MOB_MATCH("§cThis pet could not be summoned. The associated mob isn't registered in BetterMob."),
     NOT_ALLOWED("§cYou're not allowed to summon this pet."),
     OWNER_NOT_FOUND("§cThis pet could not be summoned. The summoner couldn't be found."),
     REVOKED_BEFORE_CHANGES("§cYour pet was revoked before the modifications could take place."),

@@ -10,7 +10,7 @@ api-version: 1.21
 database: false
 prefix: '${project.name}'
 depend:
-  - MythicMobs
+  - BetterMob
   - BetterModel
 softdepend:
   - Nexo
