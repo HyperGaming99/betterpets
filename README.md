@@ -11,9 +11,9 @@ Looking for help ? Join the [Discord](https://discord.com/invite/p7QTm2gUyf) !
 
 <img src="https://i.imgur.com/KadwjCO.png" alt="Features">
 
-⭕ **3D modeled pets** with ANY behavior, skills, effects and more based on MythicMobs and ModelEngine
+⭕ **3D modeled pets** with ANY behavior, skills, effects and more based on MythicMobs and BetterModel
 
-⭕ Create **mounts** using ModelEngine and implement them easily with MCPets
+⭕ Create **mounts** using BetterModel and implement them easily with MCPets
 
 ⭕ Unique **inventory** per pet
 

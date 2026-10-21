@@ -849,7 +849,7 @@ public class Pet {
         // Set the owner
         this.owner = owner;
 
-        // Set the MythicMob owner with a delay so it will not conflict with ModelEngine
+        // Set the MythicMob owner with a delay so it will not conflict with BetterModel
         new BukkitRunnable() {
             @Override
             public void run() {

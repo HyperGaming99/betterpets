@@ -40,7 +40,6 @@ import fr.nocsy.mcpets.data.config.PetFoodConfig;
 import fr.nocsy.mcpets.data.config.CategoryConfig;
 import fr.nocsy.mcpets.data.config.LanguageConfig;
 import fr.nocsy.mcpets.modeler.BetterModelModeler;
-import fr.nocsy.mcpets.modeler.ModelEngineModeler;
 import fr.nocsy.mcpets.data.config.AbstractConfig;
 import fr.nocsy.mcpets.compat.PlaceholderAPICompat;
 import fr.nocsy.mcpets.data.config.BlacklistConfig;
@@ -129,7 +128,7 @@ public class MCPets extends JavaPlugin {
         }
 
         if (!checkModeler()) {
-            getLog().severe("MCPets could not be loaded : Neither ModelEngine nor BetterModel could be found.");
+            getLog().severe("MCPets could not be loaded : BetterModel could not be found.");
             return;
         }
 
@@ -323,24 +322,15 @@ public class MCPets extends JavaPlugin {
     }
 
     /**
-     * Check and initialize the modeler (BetterModel or ModelEngine)
+     * Check and initialize the BetterModel modeler
      */
     private static boolean checkModeler() {
         if (modeler != null) return true;
 
-        // Try BetterModel first
         try {
             Class.forName("kr.toxicity.model.api.BetterModel");
             modeler = new BetterModelModeler();
             getLog().info("BetterModel found. Using BetterModel as modeler.");
-            return true;
-        } catch (final ClassNotFoundException ignored) {}
-
-        // Fallback to ModelEngine
-        try {
-            Class.forName("com.ticxo.modelengine.api.ModelEngineAPI");
-            modeler = new ModelEngineModeler();
-            getLog().info("ModelEngine found. Using ModelEngine as modeler.");
             return true;
         } catch (final ClassNotFoundException ignored) {}
 
