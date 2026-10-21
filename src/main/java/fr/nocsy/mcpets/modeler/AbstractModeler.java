@@ -8,8 +8,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.UUID;
 
 /**
- * Abstraction layer over ModelEngine / BetterModel APIs.
- * Allows the plugin to work with either modeler transparently.
+ * Abstraction layer over the BetterModel API.
  */
 public interface AbstractModeler {
 
@@ -60,7 +59,7 @@ public interface AbstractModeler {
     boolean isFlyingMount(Pet pet, UUID owner);
 
     /**
-     * Register modeler-specific event listeners (ModelMountEvent, ModelDismountEvent, etc.)
+     * Register modeler-specific event listeners (MountModelEvent, DismountModelEvent, etc.)
      */
     void registerListeners(JavaPlugin plugin);
 
