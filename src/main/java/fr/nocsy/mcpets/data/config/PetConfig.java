@@ -59,7 +59,8 @@ public class PetConfig extends AbstractConfig {
 
         if (getConfig().get("Id") == null)
             getConfig().set("Id", fileName.replace(".yml", ""));
-        if (getConfig().get("MythicMob") == null)
+        // A pet uses either "MythicMob: <id>" or "BetterMob: <id>"
+        if (getConfig().get("MythicMob") == null && getConfig().get("BetterMob") == null)
             getConfig().set("MythicMob", "No MythicMob defined");
         if (getConfig().get("Permission") == null)
             getConfig().set("Permission", PPermission.USE.getPermission());
@@ -69,7 +70,7 @@ public class PetConfig extends AbstractConfig {
             getConfig().set("SpawnRange", 3);
         if (getConfig().get("ComingBackRange") == null)
             getConfig().set("ComingBackRange", 3);
-        reorderKeys("Id", "MythicMob", "Permission", "Distance", "SpawnRange", "ComingBackRange",
+        reorderKeys("Id", "MythicMob", "BetterMob", "Permission", "Distance", "SpawnRange", "ComingBackRange",
                 "Mountable", "MountType", "MountPermission", "DespawnOnDismount", "AutoRide",
                 "Invulnerable", "InventorySize", "UseDefaultMythicMobsName",
                 "DespawnSkill", "SpawnSkill", "Taming", "Icon", "Signals", "Levels");
@@ -137,7 +138,9 @@ public class PetConfig extends AbstractConfig {
 
         // Setting up the data
         final String id = getConfig().getString("Id");
-        final String mobType = getConfig().getString("MythicMob");
+        // "BetterMob: <id>" uses BetterMob, "MythicMob: <id>" uses MythicMobs
+        final boolean usesBetterMob = getConfig().getString("BetterMob") != null;
+        final String mobType = usesBetterMob ? getConfig().getString("BetterMob") : getConfig().getString("MythicMob");
         final String permission = getConfig().getString("Permission");
         final int distance = getConfig().getInt("Distance");
         final int spawnRange = getConfig().getInt("SpawnRange");
@@ -173,6 +176,7 @@ public class PetConfig extends AbstractConfig {
 
         petConfigMapping.put(id, this);
         pet.setMythicMobName(mobType);
+        pet.setMobType(usesBetterMob ? fr.nocsy.mcpets.mobs.MobType.BETTERMOB : fr.nocsy.mcpets.mobs.MobType.MYTHICMOBS);
         pet.setPermission(permission);
         pet.setMountPermission(mountPermission);
         if (getConfig().get("Mountable") == null) {
@@ -401,18 +405,24 @@ public class PetConfig extends AbstractConfig {
                 .toList();
 
         for (final String key : keys) {
-            final String mythicMobId = getConfig().getString(key + ".MythicMob");
+            final boolean skinUsesBetterMob = getConfig().getString(key + ".BetterMob") != null;
+            final String mythicMobId = skinUsesBetterMob
+                    ? getConfig().getString(key + ".BetterMob")
+                    : getConfig().getString(key + ".MythicMob");
+            final fr.nocsy.mcpets.mobs.MobType skinMobType = skinUsesBetterMob
+                    ? fr.nocsy.mcpets.mobs.MobType.BETTERMOB
+                    : fr.nocsy.mcpets.mobs.MobType.MYTHICMOBS;
             final String skinPerm = getConfig().getString(key + ".Permission");
 
             final ItemStack skinIcon = legacyItemRead(null, false, "", "§cSkin icon (not set)", key + ".Icon");
 
-            PetSkin.load(key, pet, mythicMobId, skinPerm, skinIcon);
+            PetSkin.load(key, pet, mythicMobId, skinMobType, skinPerm, skinIcon);
         }
     }
 
     public void registerCleanPetSkin() {
         final String id = UUID.randomUUID().toString();
-        getConfig().set("Skins." + id + ".MythicMob", pet.getMythicMobName());
+        getConfig().set("Skins." + id + "." + pet.getMobType().getConfigKey(), pet.getMythicMobName());
         getConfig().set("Skins." + id + ".Permission", pet.getPermission());
         save();
 

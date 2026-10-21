@@ -32,6 +32,9 @@ public class PetSkin {
     private Pet objectPet;
     @Getter
     private String mythicMobId;
+    // Which mob plugin the skin's mob comes from (MythicMob or BetterMob key in the config)
+    @Getter
+    private fr.nocsy.mcpets.mobs.MobType mobType = fr.nocsy.mcpets.mobs.MobType.MYTHICMOBS;
     @Getter
     private ItemStack icon;
     @Getter
@@ -53,7 +56,15 @@ public class PetSkin {
      * Load the PetSkin object in the cache
      */
     public static void load(String pathId, Pet objectPet, String modelSkinId, String permission, ItemStack icon) {
+        load(pathId, objectPet, modelSkinId, fr.nocsy.mcpets.mobs.MobType.MYTHICMOBS, permission, icon);
+    }
+
+    /**
+     * Load the PetSkin object in the cache, with the mob plugin its mob comes from
+     */
+    public static void load(String pathId, Pet objectPet, String modelSkinId, fr.nocsy.mcpets.mobs.MobType mobType, String permission, ItemStack icon) {
         PetSkin petSkin = new PetSkin(pathId, objectPet, modelSkinId, permission);
+        if (mobType != null) petSkin.mobType = mobType;
         petSkin.setIcon(icon);
 
         ArrayList<PetSkin> listSkins = petSkins.get(objectPet.getId());
@@ -198,7 +209,7 @@ public class PetSkin {
 
         if (!instancePet.getId().equals(objectPet.getId())) return false;
 
-        Location loc = instancePet.getActiveMob().getEntity().getBukkitEntity().getLocation();
+        Location loc = instancePet.getActiveMob().getLocation();
 
         boolean hasRider = instancePet.hasMount(Bukkit.getPlayer(instancePet.getOwner()));
         instancePet.setActiveSkin(this);

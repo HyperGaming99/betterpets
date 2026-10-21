@@ -10,9 +10,11 @@ api-version: 1.21
 database: false
 prefix: '${project.name}'
 depend:
-  - MythicMobs
   - BetterModel
+# At least one of MythicMobs or BetterMob is required
 softdepend:
+  - MythicMobs
+  - BetterMob
   - Nexo
   - WorldGuard
   - LuckPerms

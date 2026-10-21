@@ -10,7 +10,6 @@ import fr.nocsy.mcpets.data.Pet;
 import fr.nocsy.mcpets.data.inventories.PetInventory;
 import fr.nocsy.mcpets.data.inventories.PetInventoryHolder;
 
-import io.lumine.mythic.bukkit.BukkitAdapter;
 import io.lumine.mythic.api.skills.SkillResult;
 import io.lumine.mythic.api.skills.SkillMetadata;
 import io.lumine.mythic.core.skills.SkillMechanic;
@@ -40,7 +39,7 @@ public class DropPetInventoryMechanic extends SkillMechanic implements ITargeted
 
             if (petInventory != null) {
                 Inventory inv = petInventory.getInventory();
-                Location loc = BukkitAdapter.adapt(pet.getActiveMob().getLocation());
+                Location loc = pet.getActiveMob().getLocation();
 
                 Bukkit.getScheduler().runTask(MCPets.getInstance(), () -> {
                     for (ItemStack item : inv.getContents()) {

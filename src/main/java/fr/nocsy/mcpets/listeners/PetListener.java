@@ -43,8 +43,7 @@ import fr.nocsy.mcpets.events.PetOwnerInteractEvent;
 import fr.nocsy.mcpets.data.inventories.PetInteractionMenu;
 import fr.nocsy.mcpets.data.inventories.MountInteractionMenu;
 
-import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
-import io.lumine.mythic.bukkit.events.MythicMobDespawnEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 
 public class PetListener implements Listener {
 
@@ -357,61 +356,12 @@ public class PetListener implements Listener {
     }
 
     /**
-     * Handle random despawn
+     * Handle death of the pet (works for MythicMobs and BetterMob pets).
+     * Random despawns are handled by the listener of each mob plugin.
      */
-    private final Map<UUID, Integer> repeatRespawn = new HashMap<>();
-    @EventHandler
-    public void despawn(MythicMobDespawnEvent e) {
-        if (e.getEntity() == null) return;
-
-        Pet pet = Pet.getFromEntity(e.getEntity());
-        if (pet == null) return;
-        if (pet.isRemoved()) return;
-
-        pet.despawn(PetDespawnReason.MYTHICMOBS);
-
-        UUID ownerUUID = pet.getOwner();
-        if (ownerUUID == null) return;
-
-        Player owner = Bukkit.getPlayer(pet.getOwner());
-        if (owner == null) return;
-        if (repeatRespawn.containsKey(ownerUUID) && repeatRespawn.get(ownerUUID) == 3) {
-            Language.REVOKED_UNKNOWN.sendMessage(owner);
-            repeatRespawn.remove(owner.getUniqueId());
-            return;
-        }
-        int value = 1;
-        if (repeatRespawn.containsKey(ownerUUID)) value = repeatRespawn.get(ownerUUID);
-        pet.spawn(owner, owner.getLocation());
-        pet.setRecurrent_spawn(false);
-        repeatRespawn.put(owner.getUniqueId(), value + 1);
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                repeatRespawn.remove(owner.getUniqueId());
-            }
-        }.runTaskLater(MCPets.getInstance(), 10L);
-    }
-
-    /**
-     * Handle death of the pet
-     */
-    @EventHandler
-    public void death(MythicMobDeathEvent e) {
-        if (e.getEntity() == null) return;
-
-        Pet pet = Pet.getFromEntity(e.getEntity());
-        if (pet == null) return;
-        if (pet.isRemoved()) return;
-
-        pet.despawn(PetDespawnReason.DEATH);
-
-        if (pet.getOwner() == null) return;
-
-        Player owner = Bukkit.getPlayer(pet.getOwner());
-        if (owner != null) {
-            Language.REVOKED.sendMessage(owner);
-        }
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void death(EntityDeathEvent e) {
+        PetDespawnHandler.death(Pet.getFromEntity(e.getEntity()));
     }
 
     /**

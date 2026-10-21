@@ -22,13 +22,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.event.entity.EntityMountEvent;
 
-import io.lumine.mythic.api.skills.Skill;
-import io.lumine.mythic.core.mobs.ActiveMob;
-import io.lumine.mythic.bukkit.BukkitAdapter;
-import io.lumine.mythic.core.skills.SkillTriggers;
-import io.lumine.mythic.core.skills.SkillMetadataImpl;
-import io.lumine.mythic.api.adapters.AbstractLocation;
-import io.lumine.mythic.api.exceptions.InvalidMobTypeException;
+import fr.nocsy.mcpets.mobs.MobProvider;
+import fr.nocsy.mcpets.mobs.MobProviders;
+import fr.nocsy.mcpets.mobs.MobType;
+import org.bukkit.entity.LivingEntity;
 
 import fr.nocsy.mcpets.MCPets;
 import fr.nocsy.mcpets.utils.Utils;
@@ -41,7 +38,6 @@ import fr.nocsy.mcpets.events.PetSpawnEvent;
 import fr.nocsy.mcpets.data.config.Language;
 import fr.nocsy.mcpets.events.PetTamingEvent;
 import fr.nocsy.mcpets.data.config.FormatArg;
-import fr.nocsy.mcpets.utils.PathFindingUtils;
 import fr.nocsy.mcpets.events.PetDespawnEvent;
 import fr.nocsy.mcpets.events.PetSpawnedEvent;
 import fr.nocsy.mcpets.data.config.GlobalConfig;
@@ -98,6 +94,11 @@ public class Pet {
     @Setter
     @Getter
     private String mythicMobName;
+
+    // Which mob plugin the pet's mob comes from ("MythicMob:" or "BetterMob:" in the pet config)
+    @Setter
+    @Getter
+    private MobType mobType = MobType.MYTHICMOBS;
 
     @Setter
     @Getter
@@ -190,7 +191,11 @@ public class Pet {
 
     @Getter
     // The active mob representing the pet instance
-    private ActiveMob activeMob;
+    private LivingEntity activeMob;
+
+    @Getter
+    // The mob plugin that handles the active mob
+    private MobType activeMobType;
 
     @Getter
     // Is the pet invulnerable ?
@@ -518,21 +523,9 @@ public class Pet {
                         petStats.setHealth(petStats.getCurrentLevel().getMaxHealth());
                     }
                 }.runTaskLater(MCPets.getInstance(), 2L);
-                final Skill tamingOverSkillMM = Utils.getSkill(tamingOverSkill);
-                if (tamingOverSkillMM != null) {
-                    try {
-                        tamingOverSkillMM.execute(new SkillMetadataImpl(SkillTriggers.CUSTOM, activeMob, activeMob.getEntity()));
-                    } catch (final Exception ignored) {
-                    }
-                }
+                MobProviders.castSkill(tamingOverSkill, activeMob);
             } else {
-                final Skill tamingProgressSkillMM = Utils.getSkill(tamingProgressSkill);
-                if (tamingProgressSkillMM != null) {
-                    try {
-                        tamingProgressSkillMM.execute(new SkillMetadataImpl(SkillTriggers.CUSTOM, activeMob, activeMob.getEntity()));
-                    } catch (final Exception ignored) {
-                    }
-                }
+                MobProviders.castSkill(tamingProgressSkill, activeMob);
             }
         }
     }
@@ -659,29 +652,36 @@ public class Pet {
 
             // Get the active skin (which is also a MythicMobs)
             // Adapt the mythicMob to despawn depending on the skin
-            if (getActiveSkin() != null)
+            MobType preferredType = mobType;
+            if (getActiveSkin() != null) {
                 mythicMobName = getActiveSkin().getMythicMobId();
+                preferredType = getActiveSkin().getMobType();
+            }
 
             // Any issue with the mythicmobs definition ?
             // Any issue with the owner definition ?
             if (mythicMobName == null) {
-                Debugger.send("§cMythicMob name is null, check out your pet config.");
+                Debugger.send("§cMob id is null, check out your pet config (MythicMob or BetterMob key).");
                 return MYTHIC_MOB_NULL;
             } else if (owner == null) {
                 Debugger.send("§cOwner was not found.");
                 return OWNER_NULL;
             }
 
-            if (MCPets.getMythicMobs().getMobManager().getMythicMob(mythicMobName).isEmpty()) {
-                Debugger.send("§cThe MythicMob §6" + mythicMobName + "§c doesn't exist in MythicMobs. §7Check your pet config to make sure the MythicMob you chose actually exists.");
+            // Find the mob plugin that has this mob (the configured one first)
+            final MobProvider provider = MobProviders.resolveMob(mythicMobName, preferredType);
+            if (provider == null) {
+                Debugger.send("§cThe mob §6" + mythicMobName + "§c doesn't exist in " + preferredType.getConfigKey()
+                        + (MobProviders.isAvailable(preferredType) ? "" : " (plugin not installed)")
+                        + ". §7Check your pet config to make sure the mob you chose actually exists.");
                 return MYTHIC_MOB_NULL;
             }
 
-            try {
+            {
                 // Initialize the entity
-                final Entity ent;
+                final LivingEntity ent;
                 try {
-                    // Spawn the mythicMobs
+                    // Spawn the mob
                     // if it's autoride then we spawn it at the player's location so he can climb on it directly
                     // Otherwise we spawn the pet around according to the noise
                     if (autoRide) {
@@ -695,7 +695,7 @@ public class Pet {
                             despawn(PetDespawnReason.SPAWN_ISSUE);
                             return BLOCKED;
                         }
-                        ent = MCPets.getMythicMobs().getAPIHelper().spawnMythicMob(mythicMobName, loc);
+                        ent = provider.spawn(mythicMobName, loc);
                     } else {
                         Location spawnLoc = loc;
                         if (bruise)
@@ -708,50 +708,27 @@ public class Pet {
                             despawn(PetDespawnReason.SPAWN_ISSUE);
                             return BLOCKED;
                         }
-                        ent = MCPets.getMythicMobs().getAPIHelper().spawnMythicMob(mythicMobName, spawnLoc);
+                        ent = provider.spawn(mythicMobName, spawnLoc);
                     }
-                } catch (final NullPointerException | NoSuchElementException ex) {
+                } catch (final RuntimeException ex) {
                     // if there's been a problem, trigger a despawn
-                    Debugger.send("§cMythicMob " + mythicMobName + " was not found.");
+                    Debugger.send("§cMob " + mythicMobName + " could not be spawned: " + ex.getMessage());
                     despawn(PetDespawnReason.SPAWN_ISSUE);
                     return MYTHIC_MOB_NULL;
                 }
 
                 // If the pet is not here, trigger a despawn
                 if (ent == null) {
-                    Debugger.send("§cMythicMob was found but the entity was not able to spawn.");
+                    Debugger.send("§cMob was found but the entity was not able to spawn.");
                     despawn(PetDespawnReason.SPAWN_ISSUE);
                     return MYTHIC_MOB_NULL;
                 }
 
-                // We try to fetch the mob within the MythicMobs registry
-                final Optional<ActiveMob> maybeHere = MCPets.getMythicMobs().getMobManager().getActiveMob(ent.getUniqueId());
-                maybeHere.ifPresent(this::setActiveMob);
+                setActiveMob(ent, provider.getType());
 
-                // Sometimes it can happen that the mob isn't registered, so we try to register it manually
                 if (activeMob == null) {
-                    Debugger.send("§6Warn: §7MythicMobs didn't have the mob in the registry, let's try to register it manually.");
-                    final ActiveMob mob = MCPets.getMythicMobs().getMobManager().registerActiveMob(
-                            BukkitAdapter.adapt(ent),
-                            MCPets.getMythicMobs().getMobManager().getMythicMob(mythicMobName).get(),
-                            0
-                    );
-                    if (mob != null) {
-                        setActiveMob(mob);
-                    }
-                }
-
-                // If any weird thing happened and the activeMob couldn't be registered, then we cancel everything
-                if (activeMob == null) {
-                    Debugger.send("§cMythicMob was spawned but MCPets couldn't link it to an active mob. Trying again in 0.5s automatically...");
-                    // We remove the entity coz that'll not be done by the despawn since the activeMob is null
+                    Debugger.send("§cMob was spawned but MCPets couldn't link it to the pet.");
                     ent.remove();
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            spawn(loc, bruise);
-                        }
-                    }.runTaskLater(MCPets.getInstance(), 10L);
                     return MYTHIC_MOB_NULL;
                 }
 
@@ -785,12 +762,6 @@ public class Pet {
                     return DESPAWNED_PREVIOUS;
                 }
                 return MOB_SPAWN;
-
-            } catch (final InvalidMobTypeException e) {
-                // If there's a mob bug, despawn the current pet
-                Debugger.send("§cImpossible to spawn the pet: MythicMob was not found.");
-                despawn(PetDespawnReason.SPAWN_ISSUE);
-                return NO_MOB_MATCH;
             }
         } finally {
             if (spawnKey != null) {
@@ -835,7 +806,7 @@ public class Pet {
      * Set the pet's instance active mob to the given new ActiveMob
      * Returns the value if the mob has revoked a previous one
      */
-    public boolean changeActiveMobTo(final ActiveMob mob, final UUID owner, final boolean followOwner, final PetDespawnReason reason) {
+    public boolean changeActiveMobTo(final LivingEntity mob, final UUID owner, final boolean followOwner, final PetDespawnReason reason) {
         boolean replaced = false;
         // No longer auto-despawn previous pets - allow multiple pets
         // The max limit check in spawn() will handle this
@@ -849,11 +820,12 @@ public class Pet {
         // Set the owner
         this.owner = owner;
 
-        // Set the MythicMob owner with a delay so it will not conflict with BetterModel
+        // Tell the mob plugin who the owner is, with a delay so it will not conflict with BetterModel
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (activeMob != null) activeMob.setOwnerUUID(owner);
+                final MobProvider provider = getActiveProvider();
+                if (activeMob != null && provider != null) provider.setOwner(activeMob, owner);
             }
         }.runTaskLater(MCPets.getInstance(), 1L);
 
@@ -956,7 +928,15 @@ public class Pet {
      * This will not synchronize with the pet's owner, so be extra careful with using this method
      * You'd rather use "changeActiveMobTo" instead
      */
-    public void setActiveMob(final ActiveMob mob) {
+    public void setActiveMob(final LivingEntity mob) {
+        final MobProvider provider = MobProviders.of(mob);
+        setActiveMob(mob, provider != null ? provider.getType() : mobType);
+    }
+
+    /**
+     * Set the active mob and the mob plugin that handles it
+     */
+    public void setActiveMob(final LivingEntity mob, final MobType type) {
         if (mob == null) {
             Debugger.send("§cCould not set the active pet to the new one: mob instance is null");
             despawn(PetDespawnReason.CHANGING_TO_NULL_ACTIVEMOB);
@@ -965,10 +945,10 @@ public class Pet {
         // Then we set the active mob to the new active mob
         // And we setup the default pet parameters
         activeMob = mob;
-        final Entity ent = mob.getEntity().getBukkitEntity();
+        activeMobType = type;
 
         // Put the Metadata on the pet that characterizes it so we can identify it later
-        ent.setMetadata("AlmPet", new FixedMetadataValue(MCPets.getInstance(), this));
+        mob.setMetadata("AlmPet", new FixedMetadataValue(MCPets.getInstance(), this));
     }
 
     /**
@@ -1023,7 +1003,7 @@ public class Pet {
 
                 final Location petLocation = p.getLocation();
                 final Location ownerLoc = petLocation;
-                final Location petLoc = getInstance().getActiveMob().getEntity().getBukkitEntity().getLocation();
+                final Location petLoc = getInstance().getActiveMob().getLocation();
 
                 // If the owner is not in the same world as the pet and that the pet is fully tamed, we move it
                 // to the owner
@@ -1038,7 +1018,8 @@ public class Pet {
                 // Following AI System
                 if (distance < getInstance().getComingBackRange()) {
                     // If the pet is too close then it stops
-                    PathFindingUtils.stop(activeMob.getEntity(), owner);
+                    final MobProvider provider = getActiveProvider();
+                    if (provider != null) provider.stop(activeMob, owner);
                 } else if (distance > getInstance().getDistance() &&
                         (distance < GlobalConfig.getInstance().getDistanceTeleport() || tamingProgress < 1)) {
                     // If the pet is too far but not far enough to be teleported, then it follows up the owner
@@ -1046,8 +1027,8 @@ public class Pet {
                     // * Note : if the taming is not completed then the pet can not be teleported to the owner
                     if (!followOwner)
                         return;
-                    final AbstractLocation aloc = new AbstractLocation(activeMob.getEntity().getWorld(), petLocation.getX(), petLocation.getY(), petLocation.getZ());
-                    PathFindingUtils.moveTo(activeMob.getEntity(), aloc);
+                    final MobProvider provider = getActiveProvider();
+                    if (provider != null) provider.moveTo(activeMob, petLocation);
                 } else if (distance > GlobalConfig.getInstance().getDistanceTeleport()
                         && !p.isFlying() && !p.isGliding()
                         && p.isOnGround()
@@ -1102,35 +1083,32 @@ public class Pet {
 
         if (activeMob != null) {
 
-            MCPets.getModeler().dismountAll(activeMob.getEntity().getUniqueId());
+            MCPets.getModeler().dismountAll(activeMob.getUniqueId());
 
             // If it's not a death, we don't let the death animation happen
             if (reason != PetDespawnReason.DEATH) {
                 // Do we have a despawn skill to trigger or a skin swap?
-                final Skill despawnSkillMM = Utils.getSkill(despawnSkill);
-                if (despawnSkillMM != null
-                        && reason != PetDespawnReason.SKIN) {
-                    try {
-                        despawnSkillMM.execute(new SkillMetadataImpl(SkillTriggers.CUSTOM, activeMob, activeMob.getEntity()));
-                    } catch (final Exception ex) {
-                        if (activeMob.getEntity() != null && activeMob.getEntity().getBukkitEntity() != null) {
-                            activeMob.getEntity().getBukkitEntity().remove();
-                            activeMob.despawn();
-                            activeMob.remove();
-                        }
-                    }
+                // The despawn skill is responsible for removing the mob (e.g. after an animation)
+                final boolean skillStarted = reason != PetDespawnReason.SKIN
+                        && MobProviders.castSkill(despawnSkill, activeMob);
+                if (!skillStarted) {
+                    removeActiveMobEntity();
                 } else {
-                    MCPets.getModeler().removeModel(activeMob.getEntity().getUniqueId());
-                    activeMob.despawn();
-                    activeMob.remove();
-                    if (activeMob.getEntity() != null)
-                        activeMob.getEntity().remove();
-                    if (activeMob.getEntity() != null && activeMob.getEntity().getBukkitEntity() != null)
-                        activeMob.getEntity().getBukkitEntity().remove();
+                    // Failsafe: if the despawn skill never removes the mob, remove it after 10 seconds
+                    final LivingEntity leftover = activeMob;
+                    final MobProvider provider = getActiveProvider();
+                    Bukkit.getScheduler().runTaskLater(MCPets.getInstance(), () -> {
+                        if (leftover.isValid()) {
+                            MCPets.getModeler().removeModel(leftover.getUniqueId());
+                            if (provider != null) provider.remove(leftover);
+                            else leftover.remove();
+                        }
+                    }, 200L);
                 }
             }
 
             activeMob = null;
+            activeMobType = null;
 
             Pet.removeActivePet(owner, this);
             Debugger.send("§b[DESPAWN] Removed pet " + id + " from active list");
@@ -1201,7 +1179,7 @@ public class Pet {
      */
     public void teleport(final Location loc) {
         if (isStillHere()) {
-            this.activeMob.remove();
+            removeActiveMobEntity();
             this.despawn(PetDespawnReason.TELEPORT);
             this.spawn(loc, true);
         }
@@ -1222,11 +1200,27 @@ public class Pet {
      */
     public boolean isStillHere() {
         return activeMob != null &&
-                activeMob.getEntity() != null &&
-                activeMob.getEntity().getBukkitEntity() != null &&
-                //!activeMob.getEntity().getBukkitEntity().isDead() &&     THIS ONE APPARENTLY DOESN'T WORK AS INTENDED
+                activeMob.isValid() &&
                 !activeMob.isDead() &&
                 !removed;
+    }
+
+    /**
+     * The mob plugin (MythicMobs or BetterMob) that handles the active mob, or null.
+     */
+    public MobProvider getActiveProvider() {
+        return MobProviders.get(activeMobType);
+    }
+
+    /**
+     * Remove the active mob entity, its model and the mob plugin's bookkeeping.
+     */
+    private void removeActiveMobEntity() {
+        if (activeMob == null) return;
+        MCPets.getModeler().removeModel(activeMob.getUniqueId());
+        final MobProvider provider = getActiveProvider();
+        if (provider != null) provider.remove(activeMob);
+        else activeMob.remove();
     }
 
     /**
@@ -1254,7 +1248,10 @@ public class Pet {
                 && !GlobalConfig.getInstance().isOverrideDefaultName()) {
             isDefaultName = true;
             boolean useMM = useDefaultMythicMobNames != null ? useDefaultMythicMobNames : GlobalConfig.getInstance().isUseDefaultMythicMobNames();
-            if (useMM) name = activeMob.getDisplayName();
+            if (useMM) {
+                final MobProvider provider = getActiveProvider();
+                name = provider != null ? provider.displayName(activeMob) : null;
+            }
             else {
                 name = GlobalConfig.getInstance().getDefaultName()
                         .replace("%player%", Optional.ofNullable(Bukkit.getOfflinePlayer(owner).getName()).orElse("Unknown"))
@@ -1287,7 +1284,7 @@ public class Pet {
                             .replace("%pet_id%", id)
                             .replace("%pet_name%", icon.getItemMeta().getDisplayName()));
 
-                    activeMob.getEntity().getBukkitEntity().customName(customName);
+                    activeMob.customName(customName);
 
                     new BukkitRunnable() {
 
@@ -1306,7 +1303,7 @@ public class Pet {
                     return;
                 }
 
-                activeMob.getEntity().getBukkitEntity().customName(Utils.toComponent(currentName));
+                activeMob.customName(Utils.toComponent(currentName));
 
                 new BukkitRunnable() {
                     @Override
@@ -1338,6 +1335,7 @@ public class Pet {
         pet.setPetStats(petStats);
         pet.setPetLevels(petLevels);
         pet.setMythicMobName(mythicMobName);
+        pet.setMobType(mobType);
         pet.setPermission(permission);
         pet.setDistance(distance);
         pet.setSpawnRange(spawnRange);
@@ -1354,7 +1352,7 @@ public class Pet {
         pet.setIcon(icon);
         pet.setSignalStick(signalStick);
         pet.setOwner(owner);
-        if (activeMob != null) pet.setActiveMob(activeMob);
+        if (activeMob != null) pet.setActiveMob(activeMob, activeMobType);
         pet.setSignals(signals);
         pet.setEnableSignalStickFromMenu(enableSignalStickFromMenu);
         return pet;
@@ -1367,7 +1365,7 @@ public class Pet {
         if (ent == null) return false;
 
         final EntityMountPetEvent event = new EntityMountPetEvent(ent, this);
-        final EntityMountEvent vanillaMountEvent = new EntityMountEvent(ent, activeMob.getEntity().getBukkitEntity());
+        final EntityMountEvent vanillaMountEvent = new EntityMountEvent(ent, activeMob);
         Utils.callEvent(vanillaMountEvent);
         Utils.callEvent(event);
 
@@ -1375,10 +1373,10 @@ public class Pet {
         if (event.isCancelled() || vanillaMountEvent.isCancelled()) return true;
 
         if (isStillHere()) {
-            final UUID petUUID = activeMob.getEntity().getUniqueId();
+            final UUID petUUID = activeMob.getUniqueId();
             try {
                 if (!MCPets.getModeler().mountDriver(petUUID, ent, mountType)) {
-                    activeMob.getEntity().getBukkitEntity().addPassenger(ent);
+                    activeMob.addPassenger(ent);
                     return false;
                 }
             } catch (final IllegalStateException ex) {
@@ -1394,7 +1392,7 @@ public class Pet {
      */
     public boolean hasMount(final Entity ent) {
         if (isStillHere()) {
-            final UUID petUUID = activeMob.getEntity().getUniqueId();
+            final UUID petUUID = activeMob.getUniqueId();
             return MCPets.getModeler().hasMount(petUUID, ent);
         }
         return false;
@@ -1407,7 +1405,7 @@ public class Pet {
         if (ent == null) return;
 
         if (isStillHere()) {
-            final UUID localUUID = activeMob.getEntity().getUniqueId();
+            final UUID localUUID = activeMob.getUniqueId();
             MCPets.getModeler().dismountRider(localUUID, ent);
         }
     }
@@ -1438,7 +1436,7 @@ public class Pet {
      */
     public AbstractNameTag getNameBone() {
         if (isStillHere()) {
-            final UUID localUUID = activeMob.getEntity().getUniqueId();
+            final UUID localUUID = activeMob.getUniqueId();
             return MCPets.getModeler().getNameTag(localUUID);
         }
         return null;
@@ -1473,7 +1471,7 @@ public class Pet {
         if (event.isCancelled()) return false;
 
         if (this.isStillHere()) {
-            final ActiveMob mob = this.getActiveMob();
+            final LivingEntity mob = this.getActiveMob();
             try {
                 String evolutionId = null;
                 if (petStats != null && petStats.getNextLevel() != null) {
@@ -1492,7 +1490,10 @@ public class Pet {
                     }
                 }
                 Debugger.send("§aSending signal §6" + signal + "§a to pet " + id);
-                mob.signalMob(mob.getEntity(), signal);
+                final MobProvider provider = getActiveProvider();
+                final Player sender = owner == null ? null : Bukkit.getPlayer(owner);
+                if (provider == null || !provider.signal(mob, signal, sender != null ? sender : mob))
+                    Debugger.send("§7Signal §6" + signal + "§7 reached no ~onSignal skill on pet " + id);
                 return true;
             } catch (final Exception ex) {
                 return false;

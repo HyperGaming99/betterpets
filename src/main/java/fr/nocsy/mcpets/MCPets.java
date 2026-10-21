@@ -9,8 +9,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.CompletableFuture;
 
-import com.google.common.collect.Lists;
-
 import lombok.Getter;
 
 import org.bukkit.Bukkit;
@@ -21,8 +19,7 @@ import net.luckperms.api.LuckPerms;
 
 import com.sk89q.worldguard.WorldGuard;
 
-import io.lumine.mythic.bukkit.MythicBukkit;
-import io.lumine.mythic.core.skills.CustomComponentRegistry;
+import fr.nocsy.mcpets.mobs.MobProviders;
 
 import fr.nocsy.mcpets.data.Pet;
 import fr.nocsy.mcpets.data.PetSkin;
@@ -47,22 +44,16 @@ import fr.nocsy.mcpets.data.config.ItemsListConfig;
 import fr.nocsy.mcpets.velocity.VelocitySyncManager;
 import fr.nocsy.mcpets.data.editor.EditorConversation;
 
-import static fr.nocsy.mcpets.mythicmobs.MythicListener.*;
-
 public class MCPets extends JavaPlugin {
 
     @Getter
     private static MCPets instance;
 
-    private static MythicBukkit mythicMobs;
     private static LuckPerms luckPerms;
     private static boolean itemsAdderFound = false;
     private static boolean luckPermsNotFound = false;
     private static boolean nexoFound = false;
     private static boolean nexoChecked = false;
-
-    @Getter
-    private static CustomComponentRegistry componentRegistry;
 
     @Getter
     private static AbstractModeler modeler;
@@ -122,8 +113,8 @@ public class MCPets extends JavaPlugin {
         luckPermsNotFound = false;
         modeler = null;
 
-        if (!checkMythicMobs()) {
-            getLog().severe("MCPets could not be loaded : MythicMobs could not be found or this version is not compatible with the plugin.");
+        if (!MobProviders.detect()) {
+            getLog().severe("MCPets could not be loaded : neither MythicMobs nor BetterMob could be found.");
             return;
         }
 
@@ -155,18 +146,15 @@ public class MCPets extends JavaPlugin {
         CommandHandler.init(this);
         EventListener.init(this);
         modeler.registerListeners(this);
+        MobProviders.registerListeners(this);
 
         Bukkit.getScheduler().runTask(this, () -> {
             loadConfigs();
             // PetStats.saveStats() and VelocitySyncManager.init() are scheduled inside
             // loadConfigs() once async DB init completes — see scheduleDbDependentTasks()
 
-            // Register the placeholders
-            componentRegistry = new CustomComponentRegistry(instance, Lists.newArrayList());
-            componentRegistry.registerCustomComponent(CustomComponentRegistry.MythicComponentType.PLACEHOLDER, PLACEHOLDER_PACKAGE)
-                    .registerCustomComponent(CustomComponentRegistry.MythicComponentType.CONDITION, CONDITION_PACKAGE)
-                    .registerCustomComponent(CustomComponentRegistry.MythicComponentType.TARGETER, TARGETER_PACKAGE)
-                    .registerCustomComponent(CustomComponentRegistry.MythicComponentType.MECHANIC, MECHANIC_PACKAGE);
+            // Register the pet mechanics, conditions, targeters and placeholders in MythicMobs and/or BetterMob
+            MobProviders.registerComponents(instance);
 
             getLog().info("-=-=-=-= MCPets loaded =-=-=-=-");
             getLog().info("      Plugin made by Nocsy     ");
@@ -303,25 +291,6 @@ public class MCPets extends JavaPlugin {
     }
 
     /**
-     * Check and initialize MythicMobs instance
-     */
-    private static boolean checkMythicMobs() {
-        if (mythicMobs != null) return true;
-
-        try {
-            final MythicBukkit inst = MythicBukkit.inst();
-            if (inst != null) {
-                mythicMobs = inst;
-                return true;
-            }
-        } catch (final NoClassDefFoundError error) {
-            getLog().warning("MythicMobs could not be found.");
-        }
-
-        return false;
-    }
-
-    /**
      * Check and initialize the BetterModel modeler
      */
     private static boolean checkModeler() {
@@ -349,15 +318,6 @@ public class MCPets extends JavaPlugin {
         }
 
         return false;
-    }
-
-    /**
-     * Return MythicMobs instance
-     */
-    public static MythicBukkit getMythicMobs() {
-        if (mythicMobs == null) checkMythicMobs();
-
-        return mythicMobs;
     }
 
     /**

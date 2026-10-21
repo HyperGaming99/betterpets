@@ -55,17 +55,15 @@ public class SetPetMechanic extends SkillMechanic implements ITargetedEntitySkil
 
         Bukkit.getScheduler().runTask(
                 MCPets.getInstance(),
-                () -> MCPets.getMythicMobs()
-                        .getMobManager()
-                        .getActiveMob(data.getCaster().getEntity().getUniqueId())
-                        .ifPresent(activeMob ->
-                                pet.changeActiveMobTo(
-                                        activeMob,
-                                        player.getUniqueId(),
-                                        followOwner,
-                                        PetDespawnReason.SETPET_REPLACED
-                                )
-                        )
+                () -> {
+                    if (data.getCaster().getEntity().getBukkitEntity() instanceof org.bukkit.entity.LivingEntity caster)
+                        pet.changeActiveMobTo(
+                                caster,
+                                player.getUniqueId(),
+                                followOwner,
+                                PetDespawnReason.SETPET_REPLACED
+                        );
+                }
         );
 
         return SkillResult.SUCCESS;

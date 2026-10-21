@@ -82,7 +82,7 @@ public class PetStats {
      */
     public void updateHealth() {
         if (!pet.isStillHere()) return;
-        currentHealth = pet.getActiveMob().getEntity().getHealth();
+        currentHealth = pet.getActiveMob().getHealth();
     }
 
     /**
@@ -137,7 +137,7 @@ public class PetStats {
         regenerationTimer.launch(() -> {
             if (pet.isStillHere()) {
                 double value = Math.min(currentHealth + currentLevel.getRegeneration(), currentLevel.getMaxHealth());
-                pet.getActiveMob().getEntity().setHealth(value);
+                pet.getActiveMob().setHealth(value);
                 updateHealth();
             } else {
                 regenerationTimer.stop(null);
@@ -192,7 +192,7 @@ public class PetStats {
      */
     public void refreshMaxHealth() {
         if (!pet.isStillHere()) return;
-        pet.getActiveMob().getEntity().setMaxHealth(currentLevel.getMaxHealth());
+        pet.getActiveMob().setMaxHealth(currentLevel.getMaxHealth());
     }
 
     /**
@@ -202,7 +202,7 @@ public class PetStats {
         value = Math.min(value, currentLevel.getMaxHealth());
 
         if (!pet.isStillHere()) return;
-        pet.getActiveMob().getEntity().setHealth(value);
+        pet.getActiveMob().setHealth(value);
         currentHealth = value;
     }
 

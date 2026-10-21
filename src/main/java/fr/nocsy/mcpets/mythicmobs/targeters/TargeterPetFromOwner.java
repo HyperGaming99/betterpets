@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Collection;
 import java.util.Collections;
 
-import fr.nocsy.mcpets.MCPets;
+import fr.nocsy.mcpets.mythicmobs.MythicMobsProvider;
 import fr.nocsy.mcpets.data.Pet;
 import fr.nocsy.mcpets.utils.debug.Debugger;
 
@@ -23,7 +23,7 @@ import io.lumine.mythic.bukkit.events.MythicTargeterLoadEvent;
 public class TargeterPetFromOwner extends IEntitySelector {
 
     public TargeterPetFromOwner(MythicTargeterLoadEvent event) {
-        super(MCPets.getMythicMobs().getSkillManager(), event.getConfig());
+        super(MythicMobsProvider.mythic().getSkillManager(), event.getConfig());
     }
 
     @Override
@@ -43,11 +43,11 @@ public class TargeterPetFromOwner extends IEntitySelector {
         Set<AbstractEntity> entities = new HashSet<>();
 
         for (Pet pet : pets) {
-            if (pet.getActiveMob() == null || pet.getActiveMob().getEntity() == null) {
+            if (pet.getActiveMob() == null) {
                 continue;
             }
 
-            entities.add(pet.getActiveMob().getEntity());
+            entities.add(io.lumine.mythic.bukkit.BukkitAdapter.adapt(pet.getActiveMob()));
 
             Debugger.send("Targeter @PetFromOwner found pet " + pet.getId() + " for owner " + caster.getUniqueId());
         }

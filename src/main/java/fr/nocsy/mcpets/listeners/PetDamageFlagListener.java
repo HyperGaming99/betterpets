@@ -4,7 +4,6 @@ import fr.nocsy.mcpets.data.flags.FlagsManager;
 import fr.nocsy.mcpets.data.flags.PetDamageableByPlayerFlag;
 import fr.nocsy.mcpets.events.PetDamagedByEntityEvent;
 import fr.nocsy.mcpets.utils.debug.Debugger;
-import io.lumine.mythic.bukkit.BukkitAdapter;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -24,7 +23,7 @@ public class PetDamageFlagListener implements Listener {
         if (p == null)
             return;
 
-        if (FlagsManager.getFlag(PetDamageableByPlayerFlag.NAME).testState(BukkitAdapter.adapt(e.getPet().getActiveMob().getLocation()))) {
+        if (FlagsManager.getFlag(PetDamageableByPlayerFlag.NAME).testState(e.getPet().getActiveMob().getLocation())) {
             Debugger.send("§7The pet §6" + e.getPet().getId() + "§7 didn't receive damages from §6" + p.getName() + "§7 because of the flag §6" + PetDamageableByPlayerFlag.NAME + "§7.");
             e.setCancelled(true);
             e.setOriginalDamages(0);

@@ -11,7 +11,7 @@ Looking for help ? Join the [Discord](https://discord.com/invite/p7QTm2gUyf) !
 
 <img src="https://i.imgur.com/KadwjCO.png" alt="Features">
 
-⭕ **3D modeled pets** with ANY behavior, skills, effects and more based on MythicMobs and BetterModel
+⭕ **3D modeled pets** with ANY behavior, skills, effects and more based on MythicMobs or BetterMob, with BetterModel
 
 ⭕ Create **mounts** using BetterModel and implement them easily with MCPets
 
@@ -34,6 +34,33 @@ Looking for help ? Join the [Discord](https://discord.com/invite/p7QTm2gUyf) !
 ⭕ **Velocity cross-server pet sync** — active pets follow players seamlessly between servers on a Velocity network *(see [mcpets-velocity/README.md](mcpets-velocity/README.md))*
 
 ✨ Need a demo pet to start with ? Check out [Sleepy the Otter](https://mcmodels.net/products/11051/sleepy-the-otter) !
+
+---
+
+## BetterMob support
+
+MCPets works with **MythicMobs**, **BetterMob**, or both at the same time. Each pet picks its mob plugin in its config:
+
+```yaml
+Id: otter
+MythicMob: otter_mob     # MythicMobs pet
+# or
+BetterMob: otter_mob     # BetterMob pet
+```
+
+Skins can use `MythicMob:` or `BetterMob:` the same way. Skills such as `DespawnSkill` and the taming skills are looked up in the pet's own plugin first, then in the other one.
+
+In BetterMob the MCPets skill parts have the same names as in MythicMobs:
+
+- **Mechanics:** `givePet`, `setPet`, `setLivingPet`, `evolvePet`, `petBuff`, `petDamage`, `petDespawn`, `petExperience`, `petFollow`, `petName`, `dropPetItem`, `dropPetInventory`
+- **Conditions:** `petTaming`, `petExperience`
+- **Targeters:** `@PetOwner`, `@PetFromOwner`
+- **Placeholders:** `<pet.id>`, `<pet.hp>`, `<pet.max.hp>`, `<pet.level.index>`, `<pet.level.name>`, `<pet.owner.name>`, `<pet.owner.uuid>`, `<pet.power>`, `<pet.experience>`, `<pet.damagemodifier>`, `<pet.resistancemodifier>`, `<pet.tamingprogress>`
+
+For a BetterMob pet:
+
+- **Signals:** Signal-stick signals run the mob's `~onSignal:NAME` lines.
+- **Despawn skill:** It has to remove the mob itself, for example with `remove @self`. If it doesn't, MCPets removes the mob after 10 seconds.
 
 ---
 

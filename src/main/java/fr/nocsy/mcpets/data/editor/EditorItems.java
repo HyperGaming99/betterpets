@@ -214,8 +214,21 @@ public enum EditorItems {
         if (filePath != null && variablePath != null) {
             final File file = new File(this.filePath);
             final FileConfiguration config = YamlConfiguration.loadConfiguration(file);
-            this.value = config.get(variablePath.replace("%path%", variablePathPlaceholder));
+            this.value = config.get(resolvedPath(config));
         }
+    }
+
+    /**
+     * The config path this item edits. A pet (or skin) mob is stored under "MythicMob" or "BetterMob":
+     * when the file uses "BetterMob", that key is edited instead of "MythicMob".
+     */
+    private String resolvedPath(final FileConfiguration config) {
+        final String path = variablePath.replace("%path%", variablePathPlaceholder);
+        if (type == EditorExpectationType.MYTHICMOB && path.endsWith("MythicMob")) {
+            final String betterMobPath = path.substring(0, path.length() - "MythicMob".length()) + "BetterMob";
+            if (config.get(betterMobPath) != null) return betterMobPath;
+        }
+        return path;
     }
 
     public boolean is(final EditorItems other) {
@@ -318,7 +331,7 @@ public enum EditorItems {
         else {
             if (this.value.equals(RESET_VALUE_TAG) && resetable)
                 this.value = null;
-            config.set(variablePath.replace("%path%", variablePathPlaceholder), this.value);
+            config.set(resolvedPath(config), this.value);
         }
 
         try {
@@ -1015,11 +1028,11 @@ public enum EditorItems {
     private static ItemStack PET_EDITOR_MYTHICMOB() {
         final ItemStack it = new ItemStack(Material.WRITABLE_BOOK);
         final ItemMeta meta = it.getItemMeta();
-        meta.setDisplayName("§6MythicMob");
+        meta.setDisplayName("§6MythicMob / BetterMob");
 
         final ArrayList<String> lores = new ArrayList<>();
         lores.add(" ");
-        lores.add("§7Set the MythicMob that handles the pet.");
+        lores.add("§7Set the MythicMob or BetterMob mob that handles the pet.");
         lores.add(" ");
         lores.add("§7Current value: §e%value%");
 
@@ -1251,7 +1264,7 @@ public enum EditorItems {
     private static ItemStack PET_EDITOR_ICON() {
         final ItemStack it = new ItemStack(Material.END_CRYSTAL);
         final ItemMeta meta = it.getItemMeta();
-        meta.setDisplayName("§6MythicMob");
+        meta.setDisplayName("§6MythicMob / BetterMob");
 
         final ArrayList<String> lores = new ArrayList<>();
         lores.add(" ");

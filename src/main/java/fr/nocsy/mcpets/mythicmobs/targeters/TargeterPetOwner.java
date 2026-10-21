@@ -6,7 +6,7 @@ import java.util.Collections;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import fr.nocsy.mcpets.MCPets;
+import fr.nocsy.mcpets.mythicmobs.MythicMobsProvider;
 import fr.nocsy.mcpets.data.Pet;
 
 import io.lumine.mythic.bukkit.BukkitAdapter;
@@ -22,7 +22,7 @@ import io.lumine.mythic.bukkit.events.MythicTargeterLoadEvent;
 public class TargeterPetOwner extends IEntitySelector {
 
     public TargeterPetOwner(MythicTargeterLoadEvent event) {
-        super(MCPets.getMythicMobs().getSkillManager(), event.getConfig());
+        super(MythicMobsProvider.mythic().getSkillManager(), event.getConfig());
     }
 
     @Override

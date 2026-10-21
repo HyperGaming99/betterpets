@@ -34,9 +34,6 @@ public class DismountFlyPetFlag extends AbstractFlag implements StoppableFlag {
         }
 
         task = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(getMCPetsInstance(), () -> {
-            if (MCPets.getMythicMobs() == null)
-                return;
-
             for (final UUID owner : Pet.getActivePets().keySet()) {
                 for (final Pet pet : Pet.getActivePetsForOwner(owner)) {
 

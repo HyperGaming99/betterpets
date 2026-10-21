@@ -137,6 +137,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>com.github.HyperGaming99</groupId>
+            <artifactId>bettermob</artifactId>
+            <version>v1.1.9</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>com.sk89q.worldguard</groupId>
             <artifactId>worldguard-bukkit</artifactId>
             <version>7.0.15</version>
