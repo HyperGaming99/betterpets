@@ -67,6 +67,16 @@ locked pets; the menu handles visibility separately from summoning access.
 
 ## BetterMob support
 
+To hide a pet's nametag, add `HideNameTag: true` at the top level of its pet
+configuration. This hides both the vanilla entity name and the BetterModel
+nametag, including after the pet is renamed. The default is `false`.
+
+```yaml
+Id: Aro_LG
+BetterMob: nm_arolg
+HideNameTag: true
+```
+
 MCPets works with **MythicMobs**, **BetterMob**, or both at the same time. Each pet picks its mob plugin in its config:
 
 ```yaml

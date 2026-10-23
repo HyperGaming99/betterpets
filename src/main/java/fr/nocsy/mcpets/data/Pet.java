@@ -164,6 +164,10 @@ public class Pet {
     // Per-pet override for UseDefaultMythicMobsNames. null = use global config.
     private Boolean useDefaultMythicMobNames;
 
+    @Getter
+    @Setter
+    private boolean hideNameTag;
+
     @Setter
     @Getter
     private String mountType;
@@ -970,6 +974,8 @@ public class Pet {
         activeMob = mob;
         activeMobType = type;
 
+        if (hideNameTag) activeMob.setCustomNameVisible(false);
+
         // Put the Metadata on the pet that characterizes it so we can identify it later
         mob.setMetadata("AlmPet", new FixedMetadataValue(MCPets.getInstance(), this));
     }
@@ -1373,6 +1379,7 @@ public class Pet {
         pet.setMountType(mountType);
         pet.setDefaultInventorySize(defaultInventorySize);
         pet.setAutoRide(autoRide);
+        pet.setHideNameTag(hideNameTag);
         pet.setIcon(icon);
         pet.setLockedIcon(lockedIcon);
         pet.setSignalStick(signalStick);
@@ -1441,6 +1448,7 @@ public class Pet {
      */
     public void setNameTag(String name, final boolean visible) {
         if (isStillHere()) {
+            if (hideNameTag) activeMob.setCustomNameVisible(false);
             if (name != null) {
                 name = name.replace("'", " ");
                 name = Utils.convertRawHexToMiniMessage(name);
@@ -1451,7 +1459,7 @@ public class Pet {
             final AbstractNameTag tag = getNameBone();
             if (tag == null) return;
             tag.setString(name);
-            tag.setVisible(visible);
+            tag.setVisible(visible && !hideNameTag);
         }
     }
 
