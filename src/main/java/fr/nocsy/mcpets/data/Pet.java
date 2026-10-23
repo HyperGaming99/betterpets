@@ -133,6 +133,10 @@ public class Pet {
 
     @Setter
     @Getter
+    private ItemStack lockedIcon;
+
+    @Setter
+    @Getter
     private ItemStack signalStick;
 
     @Getter
@@ -468,6 +472,25 @@ public class Pet {
             }
         }
         return pets;
+    }
+
+    /** Whether this player may summon the pet. A pet without a permission check is never locked. */
+    public boolean isLockedFor(final Player p) {
+        return checkPermission && !p.hasPermission(permission);
+    }
+
+    /** Create the icon shown in the selection menus without exposing locked pet stats. */
+    public ItemStack createMenuIcon(final Player p) {
+        if (isLockedFor(p)) {
+            if (lockedIcon != null) return lockedIcon.clone();
+            return buildItem(null, false, toString(), "§cLocked: §7" + id,
+                    List.of("§7Unlock this pet to summon it."), "BARRIER", 0, null, null, null);
+        }
+
+        final Pet displayedPet = copy();
+        displayedPet.setOwner(p.getUniqueId());
+        displayedPet.setPetStats();
+        return displayedPet.buildItem(displayedPet.getIcon(), true);
     }
 
     /**
@@ -1337,6 +1360,7 @@ public class Pet {
         pet.setMythicMobName(mythicMobName);
         pet.setMobType(mobType);
         pet.setPermission(permission);
+        pet.setCheckPermission(checkPermission);
         pet.setDistance(distance);
         pet.setSpawnRange(spawnRange);
         pet.setComingBackRange(comingBackRange);
@@ -1350,6 +1374,7 @@ public class Pet {
         pet.setDefaultInventorySize(defaultInventorySize);
         pet.setAutoRide(autoRide);
         pet.setIcon(icon);
+        pet.setLockedIcon(lockedIcon);
         pet.setSignalStick(signalStick);
         pet.setOwner(owner);
         if (activeMob != null) pet.setActiveMob(activeMob, activeMobType);

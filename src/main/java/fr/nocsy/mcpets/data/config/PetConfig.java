@@ -205,6 +205,11 @@ public class PetConfig extends AbstractConfig {
         final ItemStack icon = legacyItemRead(pet.getIcon(), true, pet.toString(), "§cIcon (not set)", "Icon");
         pet.setIcon(icon);
 
+        if (getConfig().isConfigurationSection("Icon.Locked")) {
+            pet.setLockedIcon(legacyItemRead(null, false, pet.toString(),
+                    "§cLocked: §7" + pet.getId(), "Icon.Locked"));
+        }
+
         final ItemStack signalStickItem = legacyItemRead(pet.getSignalStick(), false, Items.buildSignalStickTag(pet), "§cSignal stick (not set)", "Signals.Item");
         pet.setSignalStick(signalStickItem);
 

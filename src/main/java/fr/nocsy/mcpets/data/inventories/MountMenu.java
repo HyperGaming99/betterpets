@@ -45,7 +45,7 @@ public class MountMenu {
         owner = p.getUniqueId();
 
         // Get only mounts (pets that are mountable)
-        final List<Pet> availablePets = Pet.getAvailablePets(p);
+        final List<Pet> availablePets = Pet.getObjectPets();
         final List<Pet> availableMounts = new ArrayList<>();
         
         for (final Pet pet : availablePets) {
@@ -64,7 +64,7 @@ public class MountMenu {
         inventory = new PetInventoryHolder(config.invSize(), title, petInvType).getInventory();
         int slot = config.startSlot();
         for (final Pet mount : selectedMounts) {
-            inventory.setItem(slot++, mount.buildItem(mount.getIcon(), true));
+            inventory.setItem(slot++, mount.createMenuIcon(p));
         }
         
         if (config.needsPreviousButton()) {

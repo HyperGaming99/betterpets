@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
 import fr.nocsy.mcpets.data.Pet;
+import fr.nocsy.mcpets.data.config.Language;
 import fr.nocsy.mcpets.data.inventories.PetMenu;
 import fr.nocsy.mcpets.utils.MenuPaginationHelper;
 import fr.nocsy.mcpets.data.inventories.PetInventoryHolder;
@@ -42,6 +43,10 @@ public class PetMenuListener implements Listener {
 
         final Pet petObject = Pet.getFromIcon(it);
         if (petObject != null) {
+            if (petObject.isLockedFor(p)) {
+                Language.NOT_ALLOWED.sendMessage(p);
+                return;
+            }
             p.closeInventory();
             final Pet pet = petObject.copy();
             pet.spawnWithMessage(p);
