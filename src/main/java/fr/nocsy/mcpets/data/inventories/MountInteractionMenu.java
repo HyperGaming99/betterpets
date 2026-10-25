@@ -8,8 +8,6 @@ import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
-import java.util.UUID;
-
 /**
  * Menu to interact with a mount (rename, skin, mount, inventory)
  */
@@ -23,13 +21,12 @@ public class MountInteractionMenu {
     @Getter
     private final Inventory inventory;
 
-    public MountInteractionMenu(final Pet pet, final UUID owner) {
+    public MountInteractionMenu(final Pet pet) {
         // If the taming is incomplete then there is no mount menu available
         if (pet.getTamingProgress() < 1) {
             inventory = null;
             return;
         }
-        pet.setOwner(owner);
         inventory = new PetInventoryHolder(9, title, petInvType).getInventory();
 
         if (GlobalConfig.getInstance().isActivateBackMenuIcon())

@@ -66,10 +66,9 @@ public class ArgumentMenu extends AArgument {
      * Open a simplified interaction menu from command (back, skins, rename, revoke only)
      */
     public static void openCommandMenu(final Player p, final Pet pet, final boolean isMount) {
-        if (pet.getTamingProgress() < 1)
+        if (!p.getUniqueId().equals(pet.getOwner()) || pet.getTamingProgress() < 1)
             return;
 
-        pet.setOwner(p.getUniqueId());
         final String title = isMount
                 ? Language.INVENTORY_MOUNTS_MENU_INTERACTIONS.getMessage()
                 : Language.INVENTORY_PETS_MENU_INTERACTIONS.getMessage();

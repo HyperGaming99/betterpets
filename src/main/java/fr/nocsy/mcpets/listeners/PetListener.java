@@ -80,24 +80,12 @@ public class PetListener implements Listener {
 
             // Check if this is a mount and open the appropriate menu
             if (pet.isMount()) {
-                MountInteractionMenu menu = new MountInteractionMenu(pet, p.getUniqueId());
+                MountInteractionMenu menu = new MountInteractionMenu(pet);
                 pet.setLastInteractedWith(p);
                 menu.open(p);
             } else {
-                PetInteractionMenu menu = new PetInteractionMenu(pet, p.getUniqueId());
+                PetInteractionMenu menu = new PetInteractionMenu(pet);
                 pet.setLastInteractedWith(p);
-                menu.open(p);
-            }
-        }
-        if (pet != null && p.isOp()) {
-            // Check if this is a mount and open the appropriate menu
-            if (pet.isMount()) {
-                MountInteractionMenu menu = new MountInteractionMenu(pet, pet.getOwner());
-                pet.setLastOpInteracted(p);
-                menu.open(p);
-            } else {
-                PetInteractionMenu menu = new PetInteractionMenu(pet, pet.getOwner());
-                pet.setLastOpInteracted(p);
                 menu.open(p);
             }
         }
@@ -117,26 +105,12 @@ public class PetListener implements Listener {
 
         if (pet != null && pet.getOwner() != null && pet.getOwner().equals(p.getUniqueId())) {
             if (pet.isMount()) {
-                MountInteractionMenu menu = new MountInteractionMenu(pet, p.getUniqueId());
+                MountInteractionMenu menu = new MountInteractionMenu(pet);
                 pet.setLastInteractedWith(p);
                 menu.open(p);
             } else {
-                PetInteractionMenu menu = new PetInteractionMenu(pet, p.getUniqueId());
+                PetInteractionMenu menu = new PetInteractionMenu(pet);
                 pet.setLastInteractedWith(p);
-                menu.open(p);
-            }
-            e.setCancelled(true);
-            e.setDamage(0);
-        }
-        if (pet != null && p.isOp()) {
-            // Check if this is a mount and open the appropriate menu
-            if (pet.isMount()) {
-                MountInteractionMenu menu = new MountInteractionMenu(pet, pet.getOwner());
-                pet.setLastOpInteracted(p);
-                menu.open(p);
-            } else {
-                PetInteractionMenu menu = new PetInteractionMenu(pet, pet.getOwner());
-                pet.setLastOpInteracted(p);
                 menu.open(p);
             }
             e.setCancelled(true);

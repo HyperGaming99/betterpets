@@ -2,7 +2,6 @@ package fr.nocsy.mcpets.listeners;
 
 import java.util.UUID;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import lombok.Getter;
@@ -88,12 +87,12 @@ public class PetInteractionMenuListener implements Listener {
                 return;
             }
 
-            if (e.getClickedInventory() == null) {
+            if (e.getClickedInventory() != e.getView().getTopInventory()) {
                 return;
             }
 
-            final Pet pet = Optional.ofNullable(Pet.getFromLastInteractedWith(p)).orElse(Pet.getFromLastOpInteractedWith(p));
-            if (pet == null || !pet.isStillHere()) {
+            final Pet pet = Pet.getFromLastInteractedWith(p);
+            if (pet == null || !p.getUniqueId().equals(pet.getOwner()) || !pet.isStillHere()) {
                 p.closeInventory();
                 Language.REVOKED_BEFORE_CHANGES.sendMessage(p);
                 return;
@@ -154,9 +153,9 @@ public class PetInteractionMenuListener implements Listener {
                 return;
             }
 
-            final Pet pet = Optional.ofNullable(Pet.getFromLastInteractedWith(p)).orElse(Pet.getFromLastOpInteractedWith(p));
+            final Pet pet = Pet.getFromLastInteractedWith(p);
 
-            if (pet != null && pet.isStillHere()) {
+            if (pet != null && p.getUniqueId().equals(pet.getOwner()) && pet.isStillHere()) {
                 boolean stripColor = !p.hasPermission(PPermission.COLOR.getPermission());
 
                 if (name.isEmpty()) {

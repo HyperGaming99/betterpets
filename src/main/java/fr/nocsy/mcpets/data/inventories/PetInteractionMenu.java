@@ -1,7 +1,5 @@
 package fr.nocsy.mcpets.data.inventories;
 
-import java.util.UUID;
-
 import lombok.Getter;
 
 import org.jetbrains.annotations.NotNull;
@@ -22,13 +20,12 @@ public class PetInteractionMenu {
     @Getter
     private final Inventory inventory;
 
-    public PetInteractionMenu(@NotNull final Pet pet, final UUID owner) {
+    public PetInteractionMenu(@NotNull final Pet pet) {
         // If the taming is incomplete then there is no pet menu available
         if (pet.getTamingProgress() < 1) {
             inventory = null;
             return;
         }
-        pet.setOwner(owner);
         inventory = new PetInventoryHolder(9, title, PetInventoryHolder.Type.PET_INTERACTION_MENU).getInventory();
 
         if (GlobalConfig.getInstance().isActivateBackMenuIcon())
