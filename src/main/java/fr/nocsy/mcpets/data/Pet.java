@@ -995,7 +995,10 @@ public class Pet {
                 }
 
                 final String permission = getInstance().getPermission();
-                if (getInstance().isCheckPermission() && (permission == null || !p.hasPermission(permission))) {
+                // Untamed living pets have no unlock permission yet. The permission is
+                // granted only when taming reaches 100%, so do not despawn them mid-tame.
+                if (tamingProgress >= 1 && getInstance().isCheckPermission()
+                        && (permission == null || !p.hasPermission(permission))) {
                     Debugger.send("§6[AiManager] : §cPet " + getId() + " despawned because the owner doesn't have permission");
                     getInstance().despawn(PetDespawnReason.DONT_HAVE_PERM);
                     stopAI();
