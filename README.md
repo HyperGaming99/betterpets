@@ -25,7 +25,7 @@ Looking for help ? Join the [Discord](https://discord.com/invite/p7QTm2gUyf) !
 
 ⭕ **Give orders** to your pets using the Signal Stick
 
-⭕ Permission-based system and **customizable permission for each pet**, showing the pet or not in the GUI depending on the player having the permission for it
+⭕ Permission-based system and **customizable permission for each pet**, with locked icons for pets the player has not unlocked
 
 ⭕ **Flags** to manage pet interactions with WorldGuard
 
@@ -36,6 +36,34 @@ Looking for help ? Join the [Discord](https://discord.com/invite/p7QTm2gUyf) !
 ✨ Need a demo pet to start with ? Check out [Sleepy the Otter](https://mcmodels.net/products/11051/sleepy-the-otter) !
 
 ---
+
+## Locked pets in the menu
+
+The pet and mount menus show configured pets even when a player does not have their
+`Permission`. Locked pets cannot be summoned from the menu. Add an optional
+`Icon.Locked` section to a pet file to choose the item shown while it is locked.
+It accepts the same item fields as `Icon` (`Material`, `ItemModel`,
+`CustomModelData`, `TextureBase64`, `Name`, and `Description`). Without it, the
+menu shows a barrier icon.
+
+```yaml
+Id: Aro_LG
+BetterMob: nm_arolg
+Permission: northsoft.pets.aro_lg
+Icon:
+  Name: §bAro LG
+  Material: PAPER
+  ItemModel: nogs_menagerie:icons/nm_icon_aro_lg
+  Locked:
+    Name: §8Aro LG §c(Gesperrt)
+    Material: PAPER
+    ItemModel: nogs_menagerie:icons/nm_icon_aro_lg_locked
+    Description:
+      - §7Noch nicht freigeschaltet
+```
+
+The `Permission` must remain set. Do not disable permission checks to display
+locked pets; the menu handles visibility separately from summoning access.
 
 ## BetterMob support
 

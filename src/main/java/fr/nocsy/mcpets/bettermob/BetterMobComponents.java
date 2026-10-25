@@ -91,6 +91,9 @@ public final class BetterMobComponents {
             final boolean followOnTame = paramBoolean(ctx.params(), true, "followOnTame", "foT");
             final double tamingProgress = paramDouble(ctx.params(), 0.0D, "tamingProgress", "tP");
             Bukkit.getScheduler().runTask(MCPets.getInstance(), () -> {
+                // MCPets may have spawned and linked this entity while this task was queued.
+                // Do not replace its fully tamed instance with the wild pet template.
+                if (!caster.isValid() || Pet.getFromEntity(caster) != null) return;
                 pet.setActiveMob(caster);
                 pet.setDefaultTamingValue(tamingProgress);
                 pet.setFollowOwner(followOnTame);

@@ -34,7 +34,7 @@ public class PetMenu {
         PlayerData.get(p.getUniqueId());
         owner = p.getUniqueId();
 
-        final List<Pet> availablePets = Pet.getAvailablePets(p);
+        final List<Pet> availablePets = Pet.getObjectPets();
 
         PaginationConfig config = MenuPaginationHelper.calculatePagination(page, availablePets.size());
         
@@ -46,7 +46,7 @@ public class PetMenu {
         inventory = new PetInventoryHolder(config.invSize(), title, PetInventoryHolder.Type.PET_MENU).getInventory();
         int slot = config.startSlot();
         for (final Pet pet : selectedPets) {
-            inventory.setItem(slot++, pet.buildItem(pet.getIcon(), true));
+            inventory.setItem(slot++, pet.createMenuIcon(p));
         }
 
         int maxPages = MenuPaginationHelper.calculateMaxPages(availablePets.size());

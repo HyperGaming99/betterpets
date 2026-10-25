@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
 import fr.nocsy.mcpets.data.Pet;
+import fr.nocsy.mcpets.data.config.Language;
 import fr.nocsy.mcpets.utils.PDCTag;
 import fr.nocsy.mcpets.data.Category;
 import fr.nocsy.mcpets.data.CategoryType;
@@ -68,6 +69,10 @@ public class CategoryMenuListener implements Listener {
 
         final Pet petObject = Pet.getFromIcon(it);
         if (petObject != null) {
+            if (petObject.isLockedFor(p)) {
+                Language.NOT_ALLOWED.sendMessage(p);
+                return;
+            }
             p.closeInventory();
             final Pet pet = petObject.copy();
             pet.spawnWithMessage(p);

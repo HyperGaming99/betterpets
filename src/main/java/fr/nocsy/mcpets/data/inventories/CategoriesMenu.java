@@ -9,7 +9,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import fr.nocsy.mcpets.data.Pet;
 import fr.nocsy.mcpets.data.Items;
 import fr.nocsy.mcpets.utils.PDCTag;
 import fr.nocsy.mcpets.data.Category;
@@ -38,12 +37,11 @@ public class CategoriesMenu {
     }
 
     public static void openFiltered(final Player p, final CategoryType filterType, final int page) {
-        final List<Category> categoriesToShow;
-
-        if (filterType == null) {
-            categoriesToShow = Category.getCategories();
-        } else {
-            categoriesToShow = Category.getCategories(filterType);
+        final List<Category> categoriesToShow = new ArrayList<>();
+        final List<Category> categories = filterType == null
+                ? Category.getCategories() : Category.getCategories(filterType);
+        for (Category category : categories) {
+            if (!category.getPets().isEmpty()) categoriesToShow.add(category);
         }
 
         PaginationConfig config = MenuPaginationHelper.calculatePagination(page, categoriesToShow.size());
@@ -62,12 +60,7 @@ public class CategoriesMenu {
 
         int slot = config.startSlot();
         for (Category category : selectedCategories) {
-            for (Pet pet : category.getPets()) {
-                if (pet.has(p)) {
-                    inventory.setItem(slot++, category.getIcon());
-                    break;
-                }
-            }
+            inventory.setItem(slot++, category.getIcon());
         }
 
         int maxPages = MenuPaginationHelper.calculateMaxPages(categoriesToShow.size());

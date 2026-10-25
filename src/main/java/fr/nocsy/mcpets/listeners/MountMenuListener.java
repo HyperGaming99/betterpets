@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
 import fr.nocsy.mcpets.data.Pet;
+import fr.nocsy.mcpets.data.config.Language;
 import fr.nocsy.mcpets.utils.MenuPaginationHelper;
 import fr.nocsy.mcpets.data.inventories.MountMenu;
 import fr.nocsy.mcpets.data.inventories.PetInventoryHolder;
@@ -30,12 +31,12 @@ public class MountMenuListener implements Listener {
             return;
         }
 
+        e.setCancelled(true);
+
         final ItemStack it = e.getCurrentItem();
         if (it == null || it.getType().isAir()) {
             return;
         }
-
-        e.setCancelled(true);
 
         if (MenuPaginationHelper.handlePagination(it, p,
                 "AlmPetPreviousPage;", "AlmPetNextPage;",
@@ -45,6 +46,10 @@ public class MountMenuListener implements Listener {
 
         final Pet petObject = Pet.getFromIcon(it);
         if (petObject != null) {
+            if (petObject.isLockedFor(p)) {
+                Language.NOT_ALLOWED.sendMessage(p);
+                return;
+            }
             p.closeInventory();
             final Pet pet = petObject.copy();
             pet.spawnWithMessage(p);
