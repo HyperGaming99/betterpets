@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -1676,8 +1677,29 @@ public class Pet {
                     new FormatArg("%threshold%", Integer.toString((int) petStats.getNextLevel().getExpThreshold())),
                     new FormatArg("%progressbar%", progressBar.toString()));
 
-            // add the formatted statistics
-            lores.addAll(Utils.toComponents(statsLore));
+            // If the icon lore places stats itself, replace its placeholders instead of
+            // appending the default statistics block below the custom description.
+            final Map<String, String> loreStats = Map.of(
+                    "%levelname%", petStats.getCurrentLevel().getLevelName(),
+                    "%experience%", Integer.toString((int) petStats.getExperience()),
+                    "%threshold%", Integer.toString((int) petStats.getNextLevel().getExpThreshold()),
+                    "%progressbar%", progressBar.toString());
+            final boolean customStatsLore = lores.stream()
+                    .map(PlainTextComponentSerializer.plainText()::serialize)
+                    .anyMatch(line -> loreStats.keySet().stream().anyMatch(line::contains));
+            if (customStatsLore) {
+                lores.remove(lores.size() - 1); // separator added above for the default block
+                for (int i = 0; i < lores.size(); i++) {
+                    Component line = lores.get(i);
+                    for (final Map.Entry<String, String> entry : loreStats.entrySet()) {
+                        line = line.replaceText(builder -> builder.matchLiteral(entry.getKey())
+                                .replacement(Utils.toComponent(entry.getValue())));
+                    }
+                    lores.set(i, line);
+                }
+            } else {
+                lores.addAll(Utils.toComponents(statsLore));
+            }
 
             meta.lore(lores);
 

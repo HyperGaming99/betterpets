@@ -65,6 +65,24 @@ Icon:
 The `Permission` must remain set. Do not disable permission checks to display
 locked pets; the menu handles visibility separately from summoning access.
 
+### Living pet stats in a custom icon description
+
+For pets with `Levels`, put `%levelname%`, `%experience%`, `%threshold%`, or
+`%progressbar%` directly in `Icon.Description` to choose where the live stats
+appear. When any of these placeholders is present, MCPets does not append its
+default statistics block. Locked icons keep their own description unchanged.
+
+```yaml
+Icon:
+  Description:
+    - '§7Ein süßer Begleiter, der dir überallhin folgt.'
+    - ' '
+    - '§7Stufe: §b%levelname%'
+    - '§7XP: §b%experience%§8/§b%threshold%'
+    - ' '
+    - '§8Klicken zum Beschwören'
+```
+
 ## BetterMob support
 
 To hide a pet's nametag, add `HideNameTag: true` at the top level of its pet
