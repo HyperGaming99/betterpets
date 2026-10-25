@@ -23,11 +23,21 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 public class LivingPetsListener implements Listener {
+
+    private record FoodInteraction(UUID entityId, int tick) {}
+
+    private final Map<UUID, FoodInteraction> lastFoodInteractions = new HashMap<>();
 
     //--------- HANDLERS TO TRIGGER CUSTOM EVENTS ---------//
 
@@ -72,8 +82,18 @@ public class LivingPetsListener implements Listener {
     }
 
     @EventHandler
-    // handles the pet food events
-    public void petFoodPlayerEvent(PlayerInteractAtEntityEvent e) {
+    public void petFoodPlayerEvent(PlayerInteractEntityEvent e) {
+        handlePetFoodInteraction(e);
+    }
+
+    // Armor stands only fire the precise-position event. Normal mobs can fire the parent event.
+    @EventHandler
+    public void petFoodAtEntityEvent(PlayerInteractAtEntityEvent e) {
+        handlePetFoodInteraction(e);
+    }
+
+    private void handlePetFoodInteraction(PlayerInteractEntityEvent e) {
+        if (e.getHand() != EquipmentSlot.HAND) return;
         Player p = e.getPlayer();
         // Check if the player holds pet food
         ItemStack it = p.getInventory().getItemInMainHand();
@@ -82,6 +102,14 @@ public class LivingPetsListener implements Listener {
             // Check if the interacted mob is a pet
             Pet pet = Pet.getFromEntity(e.getRightClicked());
             if (pet != null) {
+                int tick = Bukkit.getCurrentTick();
+                UUID playerId = p.getUniqueId();
+                UUID entityId = e.getRightClicked().getUniqueId();
+                FoodInteraction previous = lastFoodInteractions.put(playerId, new FoodInteraction(entityId, tick));
+                if (previous != null && previous.tick() == tick && previous.entityId().equals(entityId)) return;
+                if (lastFoodInteractions.size() > 1024) {
+                    lastFoodInteractions.entrySet().removeIf(entry -> entry.getValue().tick() < tick - 1);
+                }
                 // Check if the pet food is compatible with that pet
                 if (!petFood.isCompatibleWithPet(pet)) {
                     e.setCancelled(true);
